@@ -1,4 +1,6 @@
 require 'rspec'
-require 'turing/version'
-
+require 'turing'
+ 
 include Turing
+include Turing::Memory
+include Turing::Processor
