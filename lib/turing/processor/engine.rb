@@ -4,8 +4,6 @@ module Turing
       EXECUTION_LIMIT = 10_000
       extend Forwardable
 
-      attr_reader :counter
-
       def_delegators :@machine, :move, :read, :write
 
       def initialize(machine)
@@ -14,25 +12,31 @@ module Turing
 
       def operate(program)
         @state = program.find :start
-        @state = iterate program until stop_iteration?
-      end
-
-      def tick!
-        @counter ||= 0
-        @counter += 1
-      end
-      
-      def iterate(program)
-        tick!
-
-        instruction = next_instruction
-        write if instruction.write?
-        move instruction.direction if instruction.direction
-        program.find instruction.next_state
+        @state = iterate(program, next_instruction) until stop_iteration?
       end
 
       def halted?
         @state.name == :halt
+      end
+
+      def counter
+        @counter ||= 0
+      end
+
+      def tick!
+        @counter = counter + 1
+      end
+
+      protected
+      def iterate(program, instruction)
+        tick!
+        handle instruction
+        program.find instruction.next_state
+      end
+
+      def handle(instruction)
+        write if instruction.write?
+        move instruction.direction if instruction.direction
       end
 
       def stop_iteration?

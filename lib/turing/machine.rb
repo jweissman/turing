@@ -7,25 +7,22 @@ module Turing
 
     def run!(program, verify_only: false)
       validate program
-      return if verify_only
-      execute program
+      execute program unless verify_only
     end
 
     protected
-
     def execute(program)
       engine.operate(program)
     end
-
-    def tape
-      @tape ||= Tape.new
-    end     
 
     def validate(program)
       program_validator.check(program)
     end
 
     private
+    def tape
+      @tape ||= Tape.new
+    end     
 
     def engine
       @engine ||= Engine.new(self)

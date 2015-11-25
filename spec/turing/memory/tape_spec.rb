@@ -2,15 +2,9 @@ require 'spec_helper'
 
 describe Tape do
   describe 'structure' do
-
     it 'has a position' do
       expect(subject.position).to be_a(TapePosition)
     end
-
-    # it 'has cells' do
-    #   expect(subject.cells).not_to be_empty
-    #   expect(subject.cells).to all(be_a(Cell))
-    # end
   end
 
   describe '#current_cell' do
