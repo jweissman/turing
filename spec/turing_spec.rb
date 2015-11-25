@@ -126,6 +126,13 @@ describe Machine do
           expect(subject.read).to be false
         end
       end
+
+      context 'when tape is inscribed' do
+        before { subject.write }
+        it 'produces true' do
+          expect(subject.read).to be true
+        end
+      end
     end
   end
   
@@ -148,18 +155,8 @@ describe Machine do
 
   describe '#run' do
     context 'collaboration' do
-      let(:instruction) do
-        instance_double('Instruction', write?: false, direction: nil, next_state: :halt)
-      end
-
-      let(:start) do
-        instance_double('State', name: :start, instruction_table: {
-          any: instruction
-        })
-      end
-
       let(:program) do
-        instance_double('Program', find: start)
+        instance_double('Program')
       end
 
       let(:validator) do
@@ -168,7 +165,7 @@ describe Machine do
 
       it 'should check the program with the validator' do
         expect(subject).to receive(:program_validator).and_return(validator)
-        subject.run!(program)
+        subject.run!(program, verify_only: true)
         expect(validator).to have_received(:check).with(program)
       end
     end
@@ -236,7 +233,7 @@ describe Machine do
       end
 
       it 'should have maxed out the step counter' do
-        expect(subject.counter).to eql(Machine::EXECUTION_LIMIT)
+        expect(subject.counter).to eql(Engine::EXECUTION_LIMIT)
       end
     end
   end
