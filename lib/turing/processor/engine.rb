@@ -4,19 +4,48 @@ module Turing
       EXECUTION_LIMIT = 10_000
       extend Forwardable
 
+      def_delegator :@state, :instruction_table, :instructions
+
       def_delegators :@machine, :move, :read, :write
+      def_delegators :@program, :start
 
       def initialize(machine)
         @machine = machine
       end
 
       def operate(program)
-        @state = program.find :start
-        @state = iterate(program, next_instruction) until stop_iteration?
+        @program = ProgramHarness.new(program)
+        run!
+      end
+
+      def run!
+        @state = start
+        iterate until stop_iteration?
+      end
+
+      def iterate
+        tick! 
+        handle next_instruction
+      end
+
+      def handle(instruction)
+        @state = executor_for(instruction).process
       end
 
       def halted?
         @state.name == :halt
+      end
+
+      def executor_for(instruction)
+        InstructionRunner.new(instruction, @machine, @program)
+      end
+
+      def stop_iteration?
+        halted? || counter >= EXECUTION_LIMIT
+      end
+
+      def next_instruction
+        instructions[read] || instructions[:any]
       end
 
       def counter
@@ -25,27 +54,6 @@ module Turing
 
       def tick!
         @counter = counter + 1
-      end
-
-      protected
-      def iterate(program, instruction)
-        tick!
-        handle instruction
-        program.find instruction.next_state
-      end
-
-      def handle(instruction)
-        write if instruction.write?
-        move instruction.direction if instruction.direction
-      end
-
-      def stop_iteration?
-        halted? || (@counter ||= 0) >= EXECUTION_LIMIT
-      end
-
-      def next_instruction
-        state_options = @state.instruction_table
-        state_options[read] || state_options[:any]
       end
     end
   end

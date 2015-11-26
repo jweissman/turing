@@ -67,10 +67,10 @@ describe Machine do
       end
     end
 
-    context 'given coherent programs known to halt by inspection' do
+    context 'given a coherent program known to halt by inspection' do
       before { subject.run!(program) }
 
-      context 'given a simple program' do
+      context 'which moves to another state and halts' do
         let(:program) do
           Program.new do |program|
             program.state(:start) do |s|
@@ -88,7 +88,7 @@ describe Machine do
         end
       end
 
-      context 'given a program which writes a symbol' do
+      context 'which writes onto the tape' do
         let(:program) do
           Program.new do |program|
             program.state :start do |start|
@@ -107,6 +107,28 @@ describe Machine do
 
         it 'should have an inscription on its tape' do
           expect(subject.read).to be true
+        end
+      end
+
+      context 'which writes and erases the tape' do
+        let(:program) do
+          Program.new do |p|
+            p.state(:start) do |state|
+              state.on :any, should_write: true, next_state: :one
+            end
+            
+            p.state(:one) do |state|
+              state.on :any, should_erase: true, next_state: :halt
+            end
+          end
+        end
+
+        it 'should halt' do
+          expect(subject).to be_halted
+        end
+
+        it 'should not have an inscription on its tape' do
+          expect(subject.read).to be false
         end
       end
     end

@@ -2,17 +2,33 @@ module Turing
   module Processor
     class Instruction
       attr_reader :symbol
-      attr_reader :next_state, :should_write, :direction
+      attr_reader :next_state, :should_write, :should_erase, :direction
 
-      def initialize(symbol, should_write: nil, direction: nil, next_state: :halt)
+      def initialize(
+        symbol, 
+        should_write: nil, 
+        should_erase: nil,
+        direction: nil, 
+        next_state: :halt
+      )
+
         @symbol = symbol
         @should_write = should_write
+        @should_erase = should_erase
         @direction = direction
         @next_state = next_state
       end
 
+      def erase?
+        !!should_erase
+      end
+
       def write?
         !!should_write
+      end
+
+      def move?
+        !!direction
       end
     end
   end
