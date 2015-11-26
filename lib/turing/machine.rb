@@ -2,8 +2,6 @@ module Turing
   class Machine
     extend Forwardable
 
-    def_delegator :program_validator, :check, :validate
-
     def_delegators :tape, :read, :write, :erase, :move
     def_delegators :engine, :halted?, :counter, :execute
 
@@ -12,17 +10,23 @@ module Turing
       execute program unless verify_only
     end
 
+    protected
+    def validate(program)
+      validator = validator_for program
+      validator.check!
+    end
+
     private
     def tape
       @tape ||= Tape.new
-    end     
+    end
 
     def engine
       @engine ||= Engine.new(self)
     end
 
-    def program_validator
-      @validator ||= ProgramValidator.new
+    def validator_for(program)
+      Program.validator_for(program)
     end
   end
 end

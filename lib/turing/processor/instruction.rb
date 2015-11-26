@@ -9,14 +9,14 @@ module Turing
         should_write: nil, 
         should_erase: nil,
         direction: nil, 
-        next_state: :halt
+        transition_to: :halt
       )
 
         @symbol = symbol
         @should_write = should_write
         @should_erase = should_erase
         @direction = direction
-        @next_state = next_state
+        @next_state = transition_to
       end
 
       def erase?

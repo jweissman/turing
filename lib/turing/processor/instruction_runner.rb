@@ -13,7 +13,8 @@ module Turing
       end
 
       def handle!
-        handle_io and handle_movement
+        handle_io
+        handle_movement
       end
 
       def next_state

@@ -3,30 +3,22 @@ module Turing
     class Program
       attr_reader :states
 
-      # def initialize
-      #   yield self if block_given?
-      #   validator.check self
-      # end
-
-      def self.build
-        program = Program.new
-        yield program
-        validator.check(program)
-        program
+      def initialize
+        @states = [halt_state]
+        yield self if block_given?
       end
 
       def state(name,*opts,&blk)
-        @states ||= [halt_state]
         new_state = State.new(name,*opts,&blk)
         @states.push new_state
       end
 
       def find(name)
-        @states.detect { |state| state.name == name }
+        states.detect { |state| state.name == name }
       end
 
       def state_names
-        @states.collect(&:name)
+        states.collect(&:name)
       end
 
       def halt_state
@@ -37,10 +29,12 @@ module Turing
         state(sym,*args,&blk)
       end
 
-      protected
+      def validate!
+        validator_for(self).check!
+      end 
 
-      def self.validator
-        @validator ||= ProgramValidator.new
+      def self.validator_for(instance)
+        ProgramValidator.new(instance)
       end
     end
   end

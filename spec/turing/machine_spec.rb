@@ -38,15 +38,15 @@ describe Machine do
     let(:expected_message) { "Invalid state '#{inexistent_state}'" }
 
     let(:program) do 
-      Program.build do |program|
-        program.state(:start) do |start|
-          start.on(:always, next_state: inexistent_state)
+      Program.new do |p|
+        p.state(:start) do |start|
+          start.on(:anything, transition_to: inexistent_state)
         end
       end
     end
 
     it 'should identify programs with invalid states' do
-      expect { subject.validate(program) }.to raise_error(expected_message)
+      expect { subject.send :validate, program }.to raise_error(expected_message)
     end
   end
 
@@ -61,9 +61,9 @@ describe Machine do
       end
 
       it 'should check the program with the validator' do
-        expect(subject).to receive(:program_validator).and_return(validator)
+        expect(subject).to receive(:validator_for).with(program).and_return(validator)
         subject.run!(program, verify_only: true)
-        expect(validator).to have_received(:check).with(program)
+        expect(validator).to have_received(:check!)
       end
     end
 
@@ -72,13 +72,13 @@ describe Machine do
 
       context 'which moves to another state and halts' do
         let(:program) do
-          Program.build do |program|
+          Program.new do |program|
             program.start do |s|
-              s.on(:any, next_state: :one)
+              s.on(:any, transition_to: :one)
             end
 
             program.one do |state|
-              state.on :any, next_state: :halt
+              state.on :any, transition_to: :halt
             end
           end
         end
@@ -90,13 +90,13 @@ describe Machine do
 
       context 'which writes onto the tape' do
         let(:program) do
-          Program.build do |p|
+          Program.new do |p|
             p.start do |start|
-              start.on :any, should_write: true, direction: :left, next_state: :one
+              start.on :any, should_write: true, direction: :left, transition_to: :one
             end
 
             p.one do |one|
-              one.on :any, direction: :right, next_state: :halt
+              one.on :any, direction: :right, transition_to: :halt
             end
           end
         end
@@ -112,13 +112,13 @@ describe Machine do
 
       context 'which writes and erases the tape' do
         let(:program) do
-          Program.build do |p|
+          Program.new do |p|
             p.start do |start|
-              start.on :any, should_write: true, next_state: :one
+              start.on :any, should_write: true, transition_to: :one
             end
             
             p.one do |one|
-              one.on :any, should_erase: true, next_state: :halt
+              one.on :any, should_erase: true, transition_to: :halt
             end
           end
         end
@@ -134,18 +134,18 @@ describe Machine do
 
       context 'which has a conditional jump' do
         let(:program) do
-          Program.build do |p|
-            p.start do |start|
-              start.always should_write: true, next_state: :one
+          Program.new do |prog|
+            prog.start do |start|
+              start.always should_write: true, transition_to: :one
             end
 
-            p.one do |one|
-              one.on true, next_state: :two
-              one.on false, next_state: :halt
+            prog.one do |one|
+              one.if_symbol_present transition_to: :two
+              one.if_symbol_absent  transition_to: :halt
             end
 
-            p.two do |two|
-              two.always should_erase: true, next_state: :one
+            prog.two do |two|
+              two.always should_erase: true, transition_to: :one
             end
           end
         end
@@ -159,13 +159,13 @@ describe Machine do
     context 'given a coherent program which loops forever' do
       before { subject.run!(program) }
       let(:program) do
-        Program.build do |program|
+        Program.new do |program|
           program.start do |start|
-            start.on :any, next_state: :restart
+            start.on :any, transition_to: :restart
           end
 
           program.restart do |restart|
-            restart.on :any, next_state: :start
+            restart.on :any, transition_to: :start
           end
         end
       end
