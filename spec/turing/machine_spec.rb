@@ -32,15 +32,15 @@ describe Machine do
       end
     end
   end
-  
+
   describe '#validate' do
     let(:inexistent_state) { 'some nonexistent state' }
     let(:expected_message) { "Invalid state '#{inexistent_state}'" }
 
     let(:program) do 
-      Program.new do |program|
+      Program.build do |program|
         program.state(:start) do |start|
-          start.on(:any, next_state: inexistent_state)
+          start.on(:always, next_state: inexistent_state)
         end
       end
     end
@@ -72,12 +72,12 @@ describe Machine do
 
       context 'which moves to another state and halts' do
         let(:program) do
-          Program.new do |program|
-            program.state(:start) do |s|
+          Program.build do |program|
+            program.start do |s|
               s.on(:any, next_state: :one)
             end
 
-            program.state(:one) do |state|
+            program.one do |state|
               state.on :any, next_state: :halt
             end
           end
@@ -90,12 +90,12 @@ describe Machine do
 
       context 'which writes onto the tape' do
         let(:program) do
-          Program.new do |program|
-            program.state :start do |start|
+          Program.build do |p|
+            p.start do |start|
               start.on :any, should_write: true, direction: :left, next_state: :one
             end
 
-            program.state :one do |one|
+            p.one do |one|
               one.on :any, direction: :right, next_state: :halt
             end
           end
@@ -112,13 +112,13 @@ describe Machine do
 
       context 'which writes and erases the tape' do
         let(:program) do
-          Program.new do |p|
-            p.state(:start) do |state|
-              state.on :any, should_write: true, next_state: :one
+          Program.build do |p|
+            p.start do |start|
+              start.on :any, should_write: true, next_state: :one
             end
             
-            p.state(:one) do |state|
-              state.on :any, should_erase: true, next_state: :halt
+            p.one do |one|
+              one.on :any, should_erase: true, next_state: :halt
             end
           end
         end
@@ -131,18 +131,41 @@ describe Machine do
           expect(subject.read).to be false
         end
       end
+
+      context 'which has a conditional jump' do
+        let(:program) do
+          Program.build do |p|
+            p.start do |start|
+              start.always should_write: true, next_state: :one
+            end
+
+            p.one do |one|
+              one.on true, next_state: :two
+              one.on false, next_state: :halt
+            end
+
+            p.two do |two|
+              two.always should_erase: true, next_state: :one
+            end
+          end
+        end
+
+        it 'should halt' do
+          expect(subject).to be_halted
+        end
+      end
     end
 
     context 'given a coherent program which loops forever' do
       before { subject.run!(program) }
       let(:program) do
-        Program.new do |program|
-          program.state :start do |start|
+        Program.build do |program|
+          program.start do |start|
             start.on :any, next_state: :restart
           end
 
-          program.state :restart do |state|
-            state.on :any, next_state: :start
+          program.restart do |restart|
+            restart.on :any, next_state: :start
           end
         end
       end

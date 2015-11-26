@@ -1,4 +1,6 @@
 require 'rspec'
+require 'pry'
+
 require 'turing'
  
 include Turing

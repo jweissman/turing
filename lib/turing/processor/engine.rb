@@ -62,7 +62,7 @@ module Turing
 
       private
       def handle(instruction, program)
-        executor = executor_for instruction, program
+        executor = executor_for(instruction, program)
         process_instruction_with executor
       end
 

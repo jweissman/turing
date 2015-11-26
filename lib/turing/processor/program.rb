@@ -3,9 +3,16 @@ module Turing
     class Program
       attr_reader :states
 
-      def initialize
-        yield self if block_given?
-        validator.check self
+      # def initialize
+      #   yield self if block_given?
+      #   validator.check self
+      # end
+
+      def self.build
+        program = Program.new
+        yield program
+        validator.check(program)
+        program
       end
 
       def state(name,*opts,&blk)
@@ -26,9 +33,13 @@ module Turing
         State.new :halt
       end
 
+      def method_missing(sym,*args,&blk)
+        state(sym,*args,&blk)
+      end
+
       protected
 
-      def validator
+      def self.validator
         @validator ||= ProgramValidator.new
       end
     end
