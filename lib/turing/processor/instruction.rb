@@ -12,11 +12,8 @@ module Turing
         transition_to: :halt
       )
 
-        @symbol = symbol
-        @should_write = should_write
-        @should_erase = should_erase
-        @direction = direction
-        @next_state = transition_to
+        @symbol, @direction, @next_state = symbol, direction, transition_to
+        @should_write, @should_erase     = should_write, should_erase
       end
 
       def erase?

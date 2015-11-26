@@ -46,24 +46,19 @@ describe Machine do
     end
 
     it 'should identify programs with invalid states' do
-      expect { subject.send :validate, program }.to raise_error(expected_message)
+      expect { program.validate! }.to raise_error(expected_message)
     end
   end
 
   describe '#run' do
     context 'collaboration' do
       let(:program) do
-        instance_double('Program')
+        instance_double('Program', validate!: true)
       end
 
-      let(:validator) do
-        instance_spy('ProgramValidator')
-      end
-
-      it 'should check the program with the validator' do
-        expect(subject).to receive(:validator_for).with(program).and_return(validator)
+      it 'should check the program with its validator' do
         subject.run!(program, verify_only: true)
-        expect(validator).to have_received(:check!)
+        expect(program).to have_received(:validate!)
       end
     end
 

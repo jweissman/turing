@@ -6,14 +6,8 @@ module Turing
     def_delegators :engine, :halted?, :counter, :execute
 
     def run!(program, verify_only: false)
-      validate program
+      program.validate!
       execute program unless verify_only
-    end
-
-    protected
-    def validate(program)
-      validator = validator_for program
-      validator.check!
     end
 
     private
@@ -23,10 +17,6 @@ module Turing
 
     def engine
       @engine ||= Engine.new(self)
-    end
-
-    def validator_for(program)
-      Program.validator_for(program)
     end
   end
 end

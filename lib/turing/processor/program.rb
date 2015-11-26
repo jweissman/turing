@@ -30,11 +30,12 @@ module Turing
       end
 
       def validate!
-        validator_for(self).check!
+        validator.check!
       end 
 
-      def self.validator_for(instance)
-        ProgramValidator.new(instance)
+      protected
+      def validator
+        @validator ||= ProgramValidator.new(self)
       end
     end
   end

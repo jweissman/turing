@@ -7,9 +7,8 @@ module Turing
       def_delegators :@machine, :move, :write, :erase
 
       def initialize(instruction, program, machine)
-        @instruction = instruction
-        @program     = program
-        @machine     = machine
+        @instruction       = instruction
+        @program, @machine = program, machine
       end
 
       def handle!

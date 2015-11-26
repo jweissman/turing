@@ -1,5 +1,6 @@
 module Turing
   module Processor
+
     module EngineComponents
       module Counting
         def counter
@@ -42,7 +43,7 @@ module Turing
         @machine = machine
       end
 
-      def execute program
+      def execute(program)
         transition_to initial_state_for(program)
         iterate program until stop_iteration?
       end
