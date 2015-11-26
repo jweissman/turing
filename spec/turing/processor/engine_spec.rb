@@ -15,7 +15,7 @@ describe Engine do
     end
   end
 
-  describe '#operate' do
+  describe '#execute' do
     let(:program)     { instance_double('Program', find: nil) }
     let(:instruction) { instance_spy('Instruction') }
 
@@ -26,8 +26,8 @@ describe Engine do
 
     it 'should handle the instructions in the program' do
       allow(subject).to receive(:handle)
-      subject.operate(program)
-      expect(subject).to have_received(:handle).with(instruction)
+      subject.execute(program)
+      expect(subject).to have_received(:handle).with(instruction, program)
     end
   end
 end

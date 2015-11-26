@@ -5,22 +5,23 @@ module Turing
 
       def_delegators :@instruction, :move?, :erase?, :write?, :direction
       def_delegators :@machine, :move, :write, :erase
-      def_delegators :@program, :find_next_state
 
-      def initialize(instruction, machine, program)
+      def initialize(instruction, program, machine)
         @instruction = instruction
-        @machine     = machine
         @program     = program
+        @machine     = machine
       end
 
-      def process
+      def handle!
         handle_io and handle_movement
-        next_state
       end
 
       def next_state
-        find_next_state @instruction
+        next_state_name = @instruction.next_state
+        @program.find next_state_name
       end
+
+      protected
 
       def handle_movement
         move direction if move?
